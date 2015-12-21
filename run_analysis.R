@@ -1,61 +1,75 @@
 # clean up environment
 rm(list = ls())
 
-# define root folder (under which we will create a folder to manage the data)
-rootfolder <- "/home/jdo/Coursera"
+# required libraries: dplyr
+library(dplyr)
 
-# define data folder (folder to be created under the root folder to hold the data)
-datafolder <- "./data"
+# constant: data set download URL
+datasetURL <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 
-# select working directory
+# constant: data set file name
+datasetfilename <- "UCI HAR Dataset.zip"
+
+# constant: root folder (location of the zipped data set)
+rootfolder <- getwd()
+
+# constant: output file name (final dataset)
+outputfile <- "output.txt"
+
+# get zipped data set if not present yet and unzip
+if (!file.exists(datasetfilename)) { download.file(url = datasetURL, dest = datasetfilename) }
+unzip(zipfile = "UCI HAR Dataset.zip", overwrite = FALSE)
+
+# retrieve "test" part of the data set in a data frame
+setwd(dir = file.path(rootfolder, "UCI HAR Dataset/test"))
+X_test <- tbl_df(read.table(file = "X_test.txt", header = FALSE, stringsAsFactors = FALSE, sep = ""))
+
+# retrieve "train" part of the data set in a data frame
+setwd(dir = file.path(rootfolder, "UCI HAR Dataset/train"))
+X_train <- tbl_df(read.table(file = "X_train.txt", header = FALSE, stringsAsFactors = FALSE, sep = ""))
+
+# concatenate the "test" and "train" data frames and clean up (part 1 of the project)
+X_merged <- rbind(X_test, X_train)
+rm(X_test, X_train)
+
+# retrieve the variable names, find the ones pertaining to the mean and standard deviation
+# use these to select the required columns/variables from the merged data frame (part 2 of the project)
+# name those columns/variables appropriately and clean up (part 4 of the project)
+setwd(dir = file.path(rootfolder, "UCI HAR Dataset"))
+variable_names <- as.vector(read.table(file = "features.txt", header = FALSE, stringsAsFactors = FALSE, sep = " ", colClasses = c("NULL", NA))[,1])
+variables_ok <- grepl("mean\\(\\)|std\\(\\)", variable_names)
+variable_names <- variable_names[variables_ok]
+X_merged <- X_merged[, variables_ok]
+names(X_merged) <- variable_names
+#names(X_merged) <- tolower(names(X_merged))
+#names(X_merged) <- sub("\\(\\)", "", names(X_merged))
+rm(variable_names, variables_ok)
+
+# retrieve the activities and subjects from the "test" and "train" parts of the data set
+# concatenate them, merge them with the main data frame and clean up
+setwd(dir = file.path(rootfolder, "UCI HAR Dataset/test"))
+y_test <- tbl_df(read.table(file = "y_test.txt", header = FALSE, stringsAsFactors = FALSE, sep = "", col.names = c("Activity_Id")))
+subject_test <- tbl_df(read.table(file = "subject_test.txt", header = FALSE, stringsAsFactors = TRUE, sep = "", col.names = c("Subject")))
+
+setwd(dir = file.path(rootfolder, "UCI HAR Dataset/train"))
+y_train <- tbl_df(read.table(file = "y_train.txt", header = FALSE, stringsAsFactors = FALSE, sep = "", col.names = c("Activity_Id")))
+subject_train <- tbl_df(read.table(file = "subject_train.txt", header = FALSE, stringsAsFactors = TRUE, sep = "", col.names = c("Subject")))
+
+X_merged <- cbind(X_merged, rbind(y_test, y_train), rbind(subject_test, subject_train))
+rm(y_test, subject_test, y_train, subject_train)
+
+# retrieve the descriptive labels for the activities
+# and use it to convert the "Activity_Id" column to an "Activity" column and clean up (part 3 of the project)
+setwd(dir = file.path(rootfolder, "UCI HAR Dataset"))
+activity_labels <- tbl_df(read.table(file = "activity_labels.txt", header = FALSE, stringsAsFactors = FALSE, sep = " ", col.names = c("Activity_Id", "Activity")))
+X_merged <- merge(X_merged, activity_labels, by = "Activity_Id")
+X_merged$Activity_Id <- NULL
+rm(activity_labels)
+
+# calculate mean of all variables, grouped by activity and subject, ordered by the group by columns (part 5 of the project)
+X_final <- X_merged %>% group_by(Activity, Subject) %>% summarise_each(funs(mean)) %>% arrange(Activity, Subject)
+rm(X_merged)
+
+# write output
 setwd(dir = rootfolder)
-if (!file.exists(datafolder)) { dir.create(datafolder) }
-setwd(datafolder)
-
-# retrieve zipped data file, unzip
-#download.file(url = "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip", dest = "UCI HAR Dataset.zip")
-#unzip(zipfile = "UCI HAR Dataset.zip", overwrite = FALSE)
-
-# enter data hierarchy, extract metadata
-setwd(dir = "./UCI HAR Dataset")
-variable_names <- read.table(file = "features.txt", header = FALSE, stringsAsFactors = FALSE, sep = " ", colClasses = c("NULL", NA))
-variable_names <- as.vector(variable_names$V2)
-activity_labels <- read.table(file = "activity_labels.txt", header = FALSE, stringsAsFactors = FALSE, sep = " ", col.names = c("Activity_Id", "Activity"))
-
-# enter data hierarchy - test data, get raw data and metadata (activity and subject information)
-setwd(dir = "./test")
-X_test <- read.table(file = "X_test.txt", header = FALSE, stringsAsFactors = FALSE, sep = "")
-names(X_test) <- variable_names
-y_test <- read.table(file = "y_test.txt", header = FALSE, stringsAsFactors = FALSE, sep = "", col.names = c("Activity_Id"))
-y_test <- merge(y_test, activity_labels, by = "Activity_Id")
-y_test$Activity_Id <- NULL
-y_test$Activity <- as.factor(y_test$Activity)
-subject_test <- read.table(file = "subject_test.txt", header = FALSE, stringsAsFactors = TRUE, sep = "", col.names = c("Subject"))
-X_test <- cbind(subject_test, y_test, X_test)
-
-# enter data hierarchy - training data, get raw data and metadata (activity and subject information)
-setwd(dir = "../train")
-X_train <- read.table(file = "X_train.txt", header = FALSE, stringsAsFactors = FALSE, sep = "")
-names(X_train) <- variable_names
-y_train <- read.table(file = "y_train.txt", header = FALSE, stringsAsFactors = FALSE, sep = "", col.names = c("Activity_Id"))
-y_train <- merge(y_train, activity_labels, by = "Activity_Id")
-y_train$Activity_Id <- NULL
-y_train$Activity <- as.factor(y_train$Activity)
-subject_train <- read.table(file = "subject_train.txt", header = FALSE, stringsAsFactors = TRUE, sep = "", col.names = c("Subject"))
-X_train <- cbind(subject_train, y_train, X_train)
-
-# merge test and train data frames
-df <- rbind(X_test, X_train)
-
-# select columns with subject and activity information and with mean and standard deviation measurements
-df_select <- df[,grep("Subject|Activity|mean\\(\\)|std\\(\\)", names(df))]
-
-# tidy up the column names a bit
-names(df_select) <- tolower(names(df_select))
-names(df_select) <- sub("\\(\\)", "", names(df_select))
-
-# cleanup
-rm(y_test, subject_test, y_train, subject_train, activity_labels, variable_names, X_test, X_train, df)
-
-# ...and return to the default working directory
-setwd(dir = rootfolder)
+write.table(X_final, outputfile, row.names = FALSE)
