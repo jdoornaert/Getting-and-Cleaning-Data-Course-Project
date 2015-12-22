@@ -109,3 +109,86 @@ As a bonus, we write the final data frame to a file:
 `write.table(X_final, outputfile, row.names = FALSE)`
 
 ...and that's it!
+
+## Results
+
+The end result, *X_final*, is a data frame containing 180 observations of 68 variables. 180 observations, because there are 30 subjects (only known by their number - 1:30) and 6 activities:
+
+* LAYING
+* SITTING
+* STANDING
+* WALKING
+* WALKING_DOWNSTAIRS
+* WALKING_UPSTAIRS
+
+The 66 other variables (excluding *Activity* and *Subject*) are the ones from the original data set that are either a mean (*mean()*) or standard deviation (*std()*) - I refer the reader to the **README.txt** and **features_info.txt** files in the original data set for more information.  
+The values that are in the *X_final* data frame are the averages of these variables grouped per activity and subject.
+
+Here's a list of those variables:
+
+* tBodyAcc-mean()-X  
+* tBodyAcc-mean()-Y  
+* tBodyAcc-mean()-Z  
+* tBodyAcc-std()-X  
+* tBodyAcc-std()-Y  
+* tBodyAcc-std()-Z  
+* tGravityAcc-mean()-X  
+* tGravityAcc-mean()-Y  
+* tGravityAcc-mean()-Z  
+* tGravityAcc-std()-X  
+* tGravityAcc-std()-Y  
+* tGravityAcc-std()-Z  
+* tBodyAccJerk-mean()-X  
+* tBodyAccJerk-mean()-Y  
+* tBodyAccJerk-mean()-Z  
+* tBodyAccJerk-std()-X  
+* tBodyAccJerk-std()-Y  
+* tBodyAccJerk-std()-Z  
+* tBodyGyro-mean()-X  
+* tBodyGyro-mean()-Y  
+* tBodyGyro-mean()-Z  
+* tBodyGyro-std()-X  
+* tBodyGyro-std()-Y  
+* tBodyGyro-std()-Z  
+* tBodyGyroJerk-mean()-X  
+* tBodyGyroJerk-mean()-Y  
+* tBodyGyroJerk-mean()-Z  
+* tBodyGyroJerk-std()-X  
+* tBodyGyroJerk-std()-Y  
+* tBodyGyroJerk-std()-Z  
+* tBodyAccMag-mean()  
+* tBodyAccMag-std()  
+* tGravityAccMag-mean()  
+* tGravityAccMag-std()  
+* tBodyAccJerkMag-mean()  
+* tBodyAccJerkMag-std()  
+* tBodyGyroMag-mean()  
+* tBodyGyroMag-std()  
+* tBodyGyroJerkMag-mean()  
+* tBodyGyroJerkMag-std()  
+* fBodyAcc-mean()-X  
+* fBodyAcc-mean()-Y  
+* fBodyAcc-mean()-Z  
+* fBodyAcc-std()-X  
+* fBodyAcc-std()-Y  
+* fBodyAcc-std()-Z  
+* fBodyAccJerk-mean()-X  
+* fBodyAccJerk-mean()-Y  
+* fBodyAccJerk-mean()-Z  
+* fBodyAccJerk-std()-X  
+* fBodyAccJerk-std()-Y  
+* fBodyAccJerk-std()-Z  
+* fBodyGyro-mean()-X  
+* fBodyGyro-mean()-Y  
+* fBodyGyro-mean()-Z  
+* fBodyGyro-std()-X  
+* fBodyGyro-std()-Y  
+* fBodyGyro-std()-Z  
+* fBodyAccMag-mean()  
+* fBodyAccMag-std()  
+* fBodyBodyAccJerkMag-mean()  
+* fBodyBodyAccJerkMag-std()  
+* fBodyBodyGyroMag-mean()  
+* fBodyBodyGyroMag-std()  
+* fBodyBodyGyroJerkMag-mean()  
+* fBodyBodyGyroJerkMag-std()  
